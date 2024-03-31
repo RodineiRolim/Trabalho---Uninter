@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto 1 - GaussSeidelMejorado</title>
+    <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+    <header>
+        <h1>Projeto 1 - GaussSeidelMejorado</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="sobre.html">Sobre Mim</a></li>
+                <li><a href="formacao.html">Formação</a></li>
+                <li><a href="portfolio.html">Portfólio</a></li>
+                <li><a href="contato.html">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <h2>Código Java - GaussSeidelMejorado</h2>
+        <pre><code>
+import java.util.Scanner;
+
+public class GaussSeidelMejorado {
+    public static void main(String[] args) {
+        Scanner teclado = new Scanner(System.in);
+        System.out.println("Favor cargar el tamanho del vector");
+        int n = teclado.nextInt();
+        double m[][] = new double [n][n];
+        double v[] = new double [n];
+
+        //Carga la matriz con el valor deseado.
+        for(int i=0; i&lt;n; i++) {
+            for(int j=0; j&lt;n; j++) {
+                System.out.println("Favor escribir el valor en la matriz en la posicion: " + "[" + i + "]" + "[" + j + "]");
+                m[i][j] = teclado.nextDouble();
+            }
+        }
+
+        for (int i = 0; i &lt; n; i++) {
+            System.out.println("Favor ingresar el valor de b en posicion: " + i);
+            v[i] = teclado.nextDouble();
+        }
+
+        //Asegura que el mayor valor absoluto de cada fila este en la diagonal principal
+        for(int i=0; i&lt;n; i++) {
+            for(int j=0; j&lt;n; j++) {
+                if(Math.abs(m[i][j]) &gt; Math.abs(m[i][i])){
+                    double c = m[i][i];
+                    m[i][i] = m[i][j];
+                    m[i][j] = c;
+                }
+            }   
+        }
+
+        //Imprime la matriz ingresada
+        System.out.println("Matriz ingresada:");
+        for (int i = 0; i &lt; n; i++) {
+            for (int j = 0; j &lt; n; j++) {
+                System.out.print(m[i][j] + " ");
+            }
+            System.out.println();
+        }
+
+        // Asegurarse de que no haya ningún 0 en la diagonal principal después de la ordenación de la matriz
+        for (int i = 0; i &lt; n; i++) {
+            if (m[i][i] == 0) {
+                System.out.println("Uno o más 0(s) en la diagonal principal.");
+                System.exit(0);
+            }
+        }
+
+        //Calcula la convergencia para saber si se aplica el metodo de gauss-seidel, en caso de no poder el programa se termina
+        double conver[] = new double[n];
+        double valorMayor = 0;
+        for(int i = 0; i&lt;n; i++) {
+            double s = 0;
+            for(int j = 0; j&lt;n; j++){
+                if(j!=i){
+                    if (i &lt; j) {
+                        s += Math.abs(m[i][j]);
+                    } else {
+                        s += Math.abs(m[i][j])*conver[j];  
+                    }
+                }
+            }
+            conver[i]= s / m[i][i];
+            valorMayor = Math.max(valorMayor, conver[i]);
+        }
+
+        if(valorMayor&lt;1){
+            System.out.println("El sistema converge");
+        } else{
+            System.out.println("El sistema no converge, favor verificar la ecuacion!!");
+            System.exit(0);
+        }
+
+        //Se informa el valor de epsilon
+        System.out.println("Favor informar el valor de Epsilon");
+        double e = teclado.nextDouble();
+
+        // Inicialización de valores iniciales de las incógnitas con entrada del usuario
+        double x[] = new double[n];
+        for (int i = 0; i &lt; n; i++) {
+            System.out.print("Ingrese el valor inicial de x" + (i + 1) + ": ");
+            x[i] = teclado.nextDouble();
+        }
+
+        teclado.close();
+
+        int iteraciones = 0;
+        //Se declara el vector que recibira el calculo de las x en cada iteracion
+        double xNuevo[] = new double[n];
+
+        //Llena el vector con el valor 1 para realizar la formula de Gauss
+        for(int i = 0; i &lt; n; i++){
+            xNuevo[i]=1;
+        }
+        //Aplicacion de la formula de Gauss-Seidel a los valores cargados.
+        do {
+            System.out.println("Iteracion numero: " + iteraciones);
+            for (int i = 0; i &lt; n; i++) {
+                double sum = 0.0;
+
+                for (int j = 0; j &lt; n; j++) {
+                    if (j != i) {  
+                        if (i &lt; j) {
+                            sum += (m[i][j] * x[j]);
+                        } else {
+                            sum += (m[i][j] * xNuevo[j]);  
+                        }
+                    }
+                }
+                xNuevo[i] = (1.0 / m[i][i]) * (v[i] - sum);  
+            }
+
+            double maxDelta = 0;
+            double maxValores = 0;
+            for (int i = 0; i &lt; n; i++) {
+                double delta = Math.abs(xNuevo[i] - x[i]);
+                maxDelta = Math.max(maxDelta, delta);
+                maxValores = Math.max(maxValores, Math.abs(xNuevo[i]));
+                x[i] = xNuevo[i];
+            }
+
+            double cociente = maxDelta / maxValores;
+
+            iteraciones ++;
+
+            if (cociente &lt; e) {
+                break;
+            }
+        } while (iteraciones &lt; 1000); // Establece un límite para evitar bucles infinitos
+
+        System.out.println("Solucion final:");
+        for (int i = 0; i &lt; n; i++) {
+            System.out.println("x" + (i + 1) + " = " + x[i]);
+        }
+
+    }
+}
+</
